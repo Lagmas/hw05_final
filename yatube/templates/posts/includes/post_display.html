@@ -2,15 +2,18 @@
 <article>
   <ul>
     {% if SHOW_AUTHOR %}
-    <li>
-      Автор: {{ post.author.get_full_name }}
-    </li>
+      <li>
+        Автор: 
+        <a href="{% url 'posts:profile' post.author.username %}">
+          {{ post.author.get_full_name }}
+        </a>      
+      </li>
     {% endif %}
     <li>
       Дата публикации: {{ post.pub_date|date:"d E Y" }}
     </li>
     {% thumbnail post.image "960x339" crop="center" upscale=True as im %}
-    <img class="card-img my-2" src="{{ im.url }}">
+      <img class="card-img my-2" src="{{ im.url }}">
     {% endthumbnail %}
   </ul>
   <p>
@@ -21,19 +24,19 @@
   </a>
   <br>
   {% if SHOW_GROUP_LINK %}
-  {% if post.group %}
-  <a href="{% url 'posts:group_list' post.group.slug %}">
-    все записи группы
-  </a>
-  <br>
-  {% endif %}
+    {% if post.group %}
+      <a href="{% url 'posts:group_list' post.group.slug %}">
+        все записи группы
+      </a>
+      <br>
+    {% endif %}
   {% endif %}
   {% if SHOW_USER_LINK %}
-  <a href="{% url 'posts:profile' post.author.username %}">
-    все посты пользователя
-  </a>
+    <a href="{% url 'posts:profile' post.author.username %}">
+      все посты пользователя
+    </a>
   {% endif %}
 </article>
 {% if not forloop.last %}
-<hr>
+  <hr>
 {% endif %}

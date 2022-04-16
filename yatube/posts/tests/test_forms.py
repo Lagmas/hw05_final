@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
-from posts.forms import CommentForm
+
 from posts.models import Comment, Group, Post
 
 TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
@@ -263,28 +263,59 @@ class PostFormImageTest(TestCase):
             ).exists()
         )
 
+    def test_edit_post(self):
+        """Проверка редактирования поста c заменой картинки."""
+        mall_gif = (
+            b'\x47\x49\x46\x38\x39\x61\x02\x00'
+            b'\x01\x00\x80\x00\x00\x00\x00\x00'
+            b'\xFF\xFF\xFF\x21\xF9\x04\x00\x00'
+            b'\x00\x00\x00\x2C\x00\x00\x00\x00'
+            b'\x02\x00\x01\x00\x00\x02\x02\x0C'
+            b'\x0A\x00\x3B'
+        )
+        uploaded = SimpleUploadedFile(
+            name='mall.gif',
+            content=mall_gif,
+            content_type='image/gif'
+        )
+        form_data = {
+            'text': 'Отредактированный текст поста',
+            'group': self.group.id,
+            'image': uploaded,
+        }
+        response = self.author_client.post(
+            reverse('posts:post_edit', args=[self.post.pk]),
+            data=form_data,
+            follow=True
+        )
+        self.assertRedirects(
+            response,
+            reverse('posts:post_detail', args=[self.post.id])
+        )
+        self.assertTrue(
+            Post.objects.filter(
+                text='Отредактированный текст поста',
+                group=self.group.id,
+                id=self.post.id,
+                author=PostFormImageTest.user,
+            ).exists()
+        )
+
 
 class CommentFormTests(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
         cls.user = User.objects.create_user(username='test_user')
-        cls.group = Group.objects.create(
-            title='Тестовый тайтл',
-            slug='test-slug',
-            description='Тестовое описание',
-        )
         cls.post = Post.objects.create(
             author=cls.user,
             text='Тестовый текст',
-            group=cls.group
         )
         cls.comment = Comment.objects.create(
             author=cls.user,
             text='Тестовый текст',
             post=cls.post
         )
-        cls.form = CommentForm()
 
     def setUp(self):
         self.guest_client = Client()
@@ -309,4 +340,28 @@ class CommentFormTests(TestCase):
             Comment.objects.filter(
                 text=form_data['text'],
             ).exists()
+        )
+
+    def test_guest_cant_create_comment(self):
+        """Неавторизированный пользователь не создаёт комментарий."""
+        comments_count = Comment.objects.count()
+        form_data = {
+            'text': 'Тестовый комментарий',
+        }
+        response = self.guest_client.post(
+            reverse('posts:add_comment', args={self.post.pk}),
+            data=form_data,
+            follow=True
+        )
+        self.assertEqual(self.post.comments.count(), comments_count)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertRedirects(
+            response,
+            reverse('users:login') + '?next=' + reverse(
+                'posts:add_comment',
+                args={self.post.pk}
+            )
+        )
+        self.assertFalse(
+            Post.objects.filter(text=form_data['text'],).exists()
         )

@@ -1,5 +1,4 @@
 from core.models import CreatedModel
-
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
@@ -56,9 +55,10 @@ class Post(CreatedModel):
     )
 
     image = models.ImageField(
-        'Картинка',
+        verbose_name='Картинка',
         upload_to='posts/',
-        blank=True
+        blank=True,
+        help_text='Загрузите картинку'
     )
 
     class Meta:
@@ -90,7 +90,7 @@ class Comment(CreatedModel):
     )
 
     class Meta:
-        ordering = ['-pub_date']
+        ordering = ('-pub_date',)
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
 

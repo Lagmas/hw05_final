@@ -1,15 +1,16 @@
 import shutil
 import tempfile
 
+from django import forms
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.db.utils import IntegrityError
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
-from django import forms
-from django.db.utils import IntegrityError
-from posts.models import Group, Post, Comment, Follow
+
+from posts.models import Comment, Follow, Group, Post
 
 TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
 
@@ -380,22 +381,6 @@ class CommentTest(TestCase):
             author=cls.commentator,
             text='Тестовый текст комментария'
         )
-
-    def test_comment(self):
-        """Проверка работоспособности комментариев."""
-        self.assertTrue(
-            Comment.objects.filter(
-                post=self.post,
-                author=self.commentator,
-                text='Тестовый текст комментария'
-            ).exists
-        )
-        response = Comment.objects.filter(
-            post=self.post,
-            author=self.commentator,
-            text='Тестовый текст комментария'
-        ).count()
-        self.assertEqual(response, 1)
 
     def test_comment_context(self):
         """Проверка перадачи context у комментария."""

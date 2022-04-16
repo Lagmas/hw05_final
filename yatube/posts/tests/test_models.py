@@ -24,6 +24,7 @@ class PostModelTest(TestCase):
             'pub_date': 'Дата публикации',
             'author': 'Автор',
             'group': 'Группа',
+            'image': 'Картинка',
         }
         for value, expected in field_verboses.items():
             with self.subTest(value=value):
@@ -98,7 +99,7 @@ class CommentModelTest(TestCase):
     def test_str_comment(self):
         """правильно ли отображается значение поля __str__ ."""
         comment = CommentModelTest.comment
-        expected_text = comment.text[:25]
+        expected_text = comment.text[:settings.POST_SYMBOLS]
         self.assertEqual(str(comment), expected_text)
 
     def test_verbose_name_comment(self):
