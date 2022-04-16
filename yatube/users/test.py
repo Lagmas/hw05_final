@@ -70,7 +70,7 @@ class UserURLTests(TestCase):
             reverse('users:password_reset_form'):
                 'users/password_reset_form.html',
             reverse('users:password_reset_done'):
-                'users/password_reset_done.html',            
+                'users/password_reset_done.html',
             reverse('users:password_reset_confirm',
                     kwargs={'uidb64': self.uid, 'token': self.token}):
                 'users/password_reset_confirm.html',
