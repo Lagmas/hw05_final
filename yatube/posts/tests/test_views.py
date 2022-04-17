@@ -381,7 +381,7 @@ class CommentTest(TestCase):
             author=cls.commentator,
             text='Тестовый текст комментария'
         )
-    
+
     def test_comment(self):
         """Проверки формы оставления комментария."""
         self.assertTrue(
