@@ -381,6 +381,22 @@ class CommentTest(TestCase):
             author=cls.commentator,
             text='Тестовый текст комментария'
         )
+    
+    def test_comment(self):
+        """Проверки формы оставления комментария."""
+        self.assertTrue(
+            Comment.objects.filter(
+                post=self.post,
+                author=self.commentator,
+                text='Тестовый текст комментария'
+            ).exists
+        )
+        response = Comment.objects.filter(
+            post=self.post,
+            author=self.commentator,
+            text='Тестовый текст комментария'
+        ).count()
+        self.assertEqual(response, 1)
 
     def test_comment_context(self):
         """Проверка перадачи context у комментария."""

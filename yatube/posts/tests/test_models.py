@@ -12,7 +12,7 @@ class PostModelTest(TestCase):
         cls.user = User.objects.create_user(username='test_user')
         cls.client.force_login(cls.user)
         cls.post = Post.objects.create(
-            text='Тестовый текст',
+            text='Тестовый текст больше 15ти символов',
             author=cls.user
         )
 
@@ -48,7 +48,8 @@ class PostModelTest(TestCase):
     def test_str_post(self):
         """правильно ли отображается значение поля __str__ ."""
         post = PostModelTest.post
-        self.assertEqual(str(post.text), post.text[:settings.TEST_POST])
+        expected_text = post.text[:settings.TEST_POST]
+        self.assertEqual(str(post), expected_text)
 
 
 class GroupModelTest(TestCase):
@@ -56,7 +57,7 @@ class GroupModelTest(TestCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.group = Group.objects.create(
-            title='Тестовая группа',
+            title='Тестовая группаТестовая группаТестовая группа',
             description='Тестовое описание',
             slug='Ссылка',
         )
@@ -78,7 +79,8 @@ class GroupModelTest(TestCase):
     def test_str_group(self):
         """правильно ли отображается значение поля __str__ ."""
         group = GroupModelTest.group
-        self.assertEqual(str(group.title), self.group.title)
+        expected_text = group.title
+        self.assertEqual(str(group), expected_text)
 
 
 class CommentModelTest(TestCase):
@@ -93,7 +95,7 @@ class CommentModelTest(TestCase):
         cls.comment = Comment.objects.create(
             post=cls.post,
             author=cls.user,
-            text='Тестовый текст комментария',
+            text='Тестовый текст комментария должен быть больше 25 символов',
         )
 
     def test_str_comment(self):
@@ -143,3 +145,19 @@ class FollowModelTest(TestCase):
                 self.assertEqual(
                     follow._meta.get_field(value).verbose_name, expected
                 )
+
+
+class PostModelTest(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.user = User.objects.create_user(username='auth')
+        cls.post = Post.objects.create(
+            author=cls.user,
+            text='Тестовый пост',
+        )
+
+    def test_model_Post_have_correct_object_names(self):
+        post = PostModelTest.post
+        expected_text = post.text[:15]
+        self.assertEqual(str(post), expected_text)

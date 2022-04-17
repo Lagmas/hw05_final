@@ -44,19 +44,6 @@ class PostFormTest(TestCase):
         self.authorized_client = Client()
         self.authorized_client.force_login(PostFormTest.user)
         self.guest_client = Client()
-        small_gif = (
-            b'\x47\x49\x46\x38\x39\x61\x02\x00'
-            b'\x01\x00\x80\x00\x00\x00\x00\x00'
-            b'\xFF\xFF\xFF\x21\xF9\x04\x00\x00'
-            b'\x00\x00\x00\x2C\x00\x00\x00\x00'
-            b'\x02\x00\x01\x00\x00\x02\x02\x0C'
-            b'\x0A\x00\x3B'
-        )
-        self.uploaded = SimpleUploadedFile(
-            name='small.gif',
-            content=small_gif,
-            content_type='image/gif'
-        )
 
     def test_create_post(self):
         """Проверка правильности создания поста."""
@@ -99,7 +86,7 @@ class PostFormTest(TestCase):
         )
         self.assertTrue(
             Post.objects.filter(
-                text='Отредактированный текст поста',
+                text=form_data['text'],
                 group=self.group.id,
                 id=self.post.id,
                 author=PostFormTest.user,
@@ -205,15 +192,9 @@ class PostFormImageTest(TestCase):
             content_type='image/gif'
         )
         cls.user = User.objects.create_user(username='author')
-        cls.group = Group.objects.create(
-            title='Тестовый тайтл',
-            slug='test-slug',
-            description='Тестовое описание',
-        )
         cls.post = Post.objects.create(
             text='Тестовый текст',
             author=cls.user,
-            group=cls.group,
             image=uploaded,
         )
 
@@ -228,7 +209,6 @@ class PostFormImageTest(TestCase):
 
     def test_create_post_with_image(self):
         """Проверка правильности создания поста."""
-        # получилась чехарда
         posts_count = Post.objects.count()
         small_gif = (
             b'\x47\x49\x46\x38\x39\x61\x02\x00'
@@ -280,7 +260,6 @@ class PostFormImageTest(TestCase):
         )
         form_data = {
             'text': 'Отредактированный текст поста',
-            'group': self.group.id,
             'image': uploaded,
         }
         response = self.author_client.post(
@@ -295,7 +274,6 @@ class PostFormImageTest(TestCase):
         self.assertTrue(
             Post.objects.filter(
                 text='Отредактированный текст поста',
-                group=self.group.id,
                 id=self.post.id,
                 author=PostFormImageTest.user,
             ).exists()
@@ -339,6 +317,8 @@ class CommentFormTests(TestCase):
         self.assertTrue(
             Comment.objects.filter(
                 text=form_data['text'],
+                post=self.post.id,
+                author=CommentFormTests.user,
             ).exists()
         )
 
@@ -361,7 +341,4 @@ class CommentFormTests(TestCase):
                 'posts:add_comment',
                 args={self.post.pk}
             )
-        )
-        self.assertFalse(
-            Post.objects.filter(text=form_data['text'],).exists()
         )

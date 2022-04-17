@@ -61,12 +61,12 @@ def post_detail(request, post_id):
     template = 'posts/post_detail.html'
     comments = post.comments.all()
     form = CommentForm()
-    following = (request.user != post.author
-                 and request.user.is_authenticated
-                 and Follow.objects.filter(
-                     user=request.user,
-                     author=post.author
-                 ).exists())
+    following = (
+        request.user.is_authenticated
+        and Follow.objects.filter(
+            user=request.user,
+            author=post.author
+        ).exists())
     context = {
         'post': post,
         'form': form,
