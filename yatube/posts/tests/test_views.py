@@ -384,19 +384,15 @@ class CommentTest(TestCase):
 
     def test_comment(self):
         """Проверки формы оставления комментария."""
-        self.assertTrue(
-            Comment.objects.filter(
-                post=self.post,
-                author=self.commentator,
-                text='Тестовый текст комментария'
-            ).exists
-        )
-        response = Comment.objects.filter(
-            post=self.post,
-            author=self.commentator,
-            text='Тестовый текст комментария'
-        ).count()
-        self.assertEqual(response, 1)
+        response = self.commentator_client.get(
+            reverse('posts:post_detail', args=[self.post.id]))
+        form_fields = {
+            'text': forms.fields.CharField,
+        }
+        for value, expected in form_fields.items():
+            with self.subTest(value=value):
+                form_field = response.context.get('form').fields.get(value)
+                self.assertIsInstance(form_field, expected)
 
     def test_comment_context(self):
         """Проверка перадачи context у комментария."""
